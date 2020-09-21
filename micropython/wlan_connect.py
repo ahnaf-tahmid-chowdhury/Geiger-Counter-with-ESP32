@@ -25,5 +25,5 @@ def connect():
             
         count+=1
         if not wlan.isconnected():
-            time.sleep(3)
+            time.sleep(3.5)
     print('network config:', wlan.ifconfig())
