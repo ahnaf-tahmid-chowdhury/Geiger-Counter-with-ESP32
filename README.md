@@ -7,7 +7,8 @@
 - Collcet the data from the serial and then add them to a list of array by using python script
 - Use of MQTTClient to pass the observed data to network
 - Use of Node-RED to programe for wiring together hardware devices, APIs and online services in new and interesting ways.
-- Plot live data and post processing the data in ParaView
+- Plot live data and post processing the data with ParaView
+- PyNE for simulation
 
 #This project is still in progress
 
