@@ -1,3 +1,7 @@
+'''
+author: ahnaf tahmid
+'''
+
 import serial
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,14 +15,14 @@ c=0
 
 def Fig():
     plt.ylim(100,200)
-    plt.plot(temp,"--",label="Degree F")
+    plt.plot(d1,"--",label="Degree F")
     plt.grid(True)
     plt.title("Live data")
-    plt.ylabel("Temp")
+    plt.ylabel("counts")
     plt.legend(loc="upper left")
     plt2=plt.twinx()
     plt.ylim(50,700)
-    plt2.plot(touch,"r-",label="touch value")
+    plt2.plot(d2,"r-",label="time delta")
     plt2.set_ylabel("Touch")
     plt2.legend(loc="upper right")
 
@@ -33,5 +37,5 @@ while True:
     drawnow(Fig)
     c+=1
     if c>50:
-        temp.pop(0)
-        touch.pop(0)
+        d1.pop(0)
+        d2.pop(0)
