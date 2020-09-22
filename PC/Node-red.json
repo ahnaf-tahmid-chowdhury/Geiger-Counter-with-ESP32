@@ -1,0 +1,218 @@
+[
+    {
+        "id": "59ed23c.6be93dc",
+        "type": "tab",
+        "label": "ESP32 Geiger",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "6312303e.b7d53",
+        "type": "mqtt in",
+        "z": "59ed23c.6be93dc",
+        "name": "",
+        "topic": "CPM",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "daf24a0a.0d1ed",
+        "x": 180,
+        "y": 220,
+        "wires": [
+            [
+                "6f8f1699.a12ca",
+                "4029684e.37479",
+                "375b3ff8.8642c"
+            ]
+        ]
+    },
+    {
+        "id": "6f8f1699.a12ca",
+        "type": "debug",
+        "z": "59ed23c.6be93dc",
+        "d": true,
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "ac41690d.879e7",
+        "type": "mqtt in",
+        "z": "59ed23c.6be93dc",
+        "name": "delta_t",
+        "topic": "delta_t",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "daf24a0a.0d1ed",
+        "x": 180,
+        "y": 440,
+        "wires": [
+            [
+                "6f8f1699.a12ca",
+                "33adc812.7bb168"
+            ]
+        ]
+    },
+    {
+        "id": "4029684e.37479",
+        "type": "ui_chart",
+        "z": "59ed23c.6be93dc",
+        "name": "CPM chart",
+        "group": "5ae0efac.11b6d",
+        "order": 0,
+        "width": "15",
+        "height": "5",
+        "label": "Counts Chart",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "500",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "useOldStyle": false,
+        "outputs": 1,
+        "x": 400,
+        "y": 360,
+        "wires": [
+            []
+        ],
+        "inputLabels": [
+            "payload"
+        ]
+    },
+    {
+        "id": "375b3ff8.8642c",
+        "type": "ui_gauge",
+        "z": "59ed23c.6be93dc",
+        "name": "",
+        "group": "5ae0efac.11b6d",
+        "order": 1,
+        "width": "8",
+        "height": "5",
+        "gtype": "wave",
+        "title": "Total counts",
+        "label": "",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "60000",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 440,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "33adc812.7bb168",
+        "type": "ui_chart",
+        "z": "59ed23c.6be93dc",
+        "name": "",
+        "group": "5ae0efac.11b6d",
+        "order": 0,
+        "width": "25",
+        "height": "6",
+        "label": "delta t",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": true,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "100",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "useOldStyle": false,
+        "outputs": 1,
+        "x": 610,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "daf24a0a.0d1ed",
+        "type": "mqtt-broker",
+        "z": "",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "5ae0efac.11b6d",
+        "type": "ui_group",
+        "z": "",
+        "name": "Geiger",
+        "tab": "78c67019.878288",
+        "order": 2,
+        "disp": true,
+        "width": "25",
+        "collapse": false
+    },
+    {
+        "id": "78c67019.878288",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Geiger Counter",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]

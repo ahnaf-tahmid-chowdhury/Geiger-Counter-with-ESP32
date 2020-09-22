@@ -2,9 +2,9 @@ import Geiger
 import Buzzer
 from utime import *
 from umqtt.robust import MQTTClient
-from wlan_connect import Connect
+from wlan_connect import auto_connect
 
-Connect()
+auto_connect()
 
 SERVER = "192.168.1.100"        #IP or DNS record
 
