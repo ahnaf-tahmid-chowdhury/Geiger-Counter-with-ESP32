@@ -35,7 +35,7 @@ while True:
         Buzzer.buzzer()
         d1=str(len(CPM))
         d2=str(delta_t)
-        data = d1+","+d2
+        data = d1+","+d2+","+str(time())
         print(data)
         mqtt.publish("CPM", d1)
         mqtt.publish("delta_t",d2)
