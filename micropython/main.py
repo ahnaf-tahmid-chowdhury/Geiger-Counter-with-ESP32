@@ -24,6 +24,7 @@ CPM = []
 event = 0
 delta_t= 0
 d1= 0
+
 async def geiger_count():
     global event, last_tick, current_tick, CPM, delta_t, d1
     while True:
@@ -41,7 +42,6 @@ async def geiger_count():
             d1=d1+1
             Buzzer()
             await uasyncio.sleep(0.00019) #dead time of GM tube
-
 
 async def data_pass():
     while True:
@@ -66,9 +66,7 @@ async def data_pass():
         except:
             pass
         await uasyncio.sleep_ms(500)       
-        
-
-       
+              
 event_loop = uasyncio.get_event_loop()
 event_loop.create_task(geiger_count())
 event_loop.create_task(data_pass())
