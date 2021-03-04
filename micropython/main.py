@@ -4,44 +4,71 @@ from umqtt.robust import MQTTClient
 from wlan_connect import auto_connect
 from hcsr04 import HCSR04
 import uasyncio
-auto_connect()
+import esp32
 
-SERVER = "192.168.1.100"        #IP or DNS record
-
+SERVER = "192.168.1.100"  #IP or DNS record
 mqtt = MQTTClient("GM",SERVER)
 
+auto_connect()    
 try:
     mqtt.connect()
 except:
-    print('mqtt connect failed')
+    pass
 
 g=GMtube(12,10000,675,15)
-
+usonic=HCSR04(trigger_pin=19,echo_pin=18)
 
 last_tick = ticks_ms()
 current_tick = ticks_ms()
 CPM = []
 event = 0
+delta_t= 0
+d1= 0
+async def geiger_count():
+    global event, last_tick, current_tick, CPM, delta_t, d1
+    while True:
+        # check if a new event happened
+        if g.count > event:
+            event = g.count
+            current_tick = ticks_ms()
+            delta_t = ticks_diff(current_tick, last_tick)
+            last_tick = current_tick
+            
+            if delta_t < 120000:
+                CPM.append(delta_t)
+                while sum(CPM) > 60000:
+                    CPM.pop(0)
+            d1=d1+1
+            Buzzer()
+            await uasyncio.sleep(0.00019) #dead time of GM tube
 
-while True:
-    # check if a new event happened
-    if g.count > event:
-        event = g.count
-        current_tick = ticks_ms()
-        delta_t = ticks_diff(current_tick, last_tick)
-        last_tick = current_tick
 
-        if delta_t < 120000:
-            CPM.append(delta_t)
-            while sum(CPM) > 60000:
-                CPM.pop(0)
+async def data_pass():
+    while True:
         
-        Buzzer()
-        d1=str(len(CPM))
-        d2=str(delta_t)
-        data = d1+","+d2+","+str(time())
+        d2=(len(CPM))
+        d3=str(d2*0.0057)
+        d4=str(delta_t)
+        d5=str(usonic.distance_cm())
+        d6=str((esp32.raw_temperature()-32)*5/9)
+        data=str(d1)+","+str(d2)+","+d3+","+d4+","+d5+","+d6
         print(data)
-        mqtt.publish("CPM", d1)
-        mqtt.publish("delta_t",d2)
         
+        try:
+            mqtt.publish("total", d1)
+            mqtt.publish("cpm", d2)
+            mqtt.publish("uSv", d3)
+            mqtt.publish("delta_t",d4)
+            mqtt.publish("distance",d5)
+            mqtt.publish("temperature",d6)
+        except:
+            pass
+        await uasyncio.sleep_ms(500)       
+        
+
+       
+event_loop = uasyncio.get_event_loop()
+event_loop.create_task(geiger_count())
+event_loop.create_task(data_pass())
+event_loop.run_forever()
 
