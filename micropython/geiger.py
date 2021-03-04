@@ -1,5 +1,5 @@
 from machine import Pin, PWM
-from utime import sleep_ms
+from utime import sleep_ms, sleep_us
 
 @micropython.native
 class GMtube:
@@ -27,9 +27,8 @@ class Buzzer:
     def buzzer(self):
         self.pin_1.on()
         self.pin_2.off()
-        # this goes into dead time of the counter
         sleep_ms(2)
         self.pin_1.off()
         self.pin_2.on()
-        sleep_ms(2) 
+        sleep_us(10) 
         self.pin_2.off()
