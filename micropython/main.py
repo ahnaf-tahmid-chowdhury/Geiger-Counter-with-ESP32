@@ -2,7 +2,8 @@ from geiger import GMtube,Buzzer
 from utime import *
 from umqtt.robust import MQTTClient
 from wlan_connect import auto_connect
-
+from hcsr04 import HCSR04
+import uasyncio
 auto_connect()
 
 SERVER = "192.168.1.100"        #IP or DNS record
