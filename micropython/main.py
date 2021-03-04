@@ -47,6 +47,8 @@ async def data_pass():
     while True:
         
         d2=(len(CPM))
+        if d2 < 200:
+            d2=int(d2/2)
         d3=str(d2*0.0057)
         d4=str(delta_t)
         d5=str(usonic.distance_cm())
