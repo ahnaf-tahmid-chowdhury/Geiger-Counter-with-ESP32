@@ -6,14 +6,16 @@ from hcsr04 import HCSR04
 import uasyncio
 import esp32
 
-SERVER = "192.168.1.100"  #IP or DNS record
+SERVER = "192.168.1.105"  #IP or DNS record
 mqtt = MQTTClient("GM",SERVER)
-
-auto_connect()    
+auto_connect()
 try:
     mqtt.connect()
+    print("mqtt success")
 except:
-    pass
+    print("mqtt faild")
+
+
 
 g=GMtube(12,10000,675,15)
 usonic=HCSR04(trigger_pin=19,echo_pin=18)
@@ -65,7 +67,14 @@ async def data_pass():
             mqtt.publish("temperature",d6)
         except:
             pass
-        await uasyncio.sleep_ms(500)       
+        if d2 < 400:
+            await uasyncio.sleep_ms(100)
+        elif d2 < 700:
+            await uasyncio.sleep_ms(500)
+        elif d2 < 1500:
+            await uasyncio.sleep_ms(800)
+        else:
+            await uasyncio.sleep_ms(1000)
               
 event_loop = uasyncio.get_event_loop()
 event_loop.create_task(geiger_count())
