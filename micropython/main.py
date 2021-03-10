@@ -7,7 +7,7 @@ import uasyncio
 import esp32
 
 SERVER = "192.168.1.105"  #IP or DNS record
-mqtt = MQTTClient("GM",SERVER)
+mqtt = MQTTClient("SmartGeiger",SERVER)
 auto_connect()
 try:
     mqtt.connect()
@@ -59,7 +59,7 @@ async def data_pass():
         print(data)
         
         try:
-            mqtt.publish("total", d1)
+            mqtt.publish("total_counts", d1)
             mqtt.publish("cpm", d2)
             mqtt.publish("uSv", d3)
             mqtt.publish("delta_t",d4)
