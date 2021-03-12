@@ -1,0 +1,12 @@
+{
+    "essid" : "Chowdhury",
+    "password" : "atc48888",
+    "clientID" : "SmartGeiger",
+    "local" :"1",
+    "cloud" : "0",
+    "ubidots" : "industrial.api.ubidots.com",
+    "ubidots_key" : "Your ubidots key",
+    "local_server" : "192.168.1.100",
+    "ifttt_key" : "Your ifttt key",
+    "msg alert" : "0"
+    }
