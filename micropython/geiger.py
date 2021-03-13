@@ -23,12 +23,15 @@ class Buzzer:
     def __init__(self,pin1=2,pin2=4):
         self.pin_1 = Pin(pin1, Pin.OUT)
         self.pin_2 = Pin(pin2, Pin.OUT)
-        self.buzzer()
+
     def buzzer(self):
         self.pin_1.on()
         self.pin_2.off()
         sleep_ms(2)
         self.pin_1.off()
         self.pin_2.on()
-        sleep_us(10) 
+        sleep_us(1) 
+        self.pin_2.off()
+    def off(self):
+        self.pin_1.off()
         self.pin_2.off()
