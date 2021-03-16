@@ -8,5 +8,5 @@
     "ubidots_key" : "Your ubidots key",
     "local_server" : "192.168.1.100",
     "ifttt_key" : "Your ifttt key",
-    "msg alert" : "0"
+    "msg_alert" : "0"
     }
