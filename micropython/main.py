@@ -166,7 +166,7 @@ async def data_pass():
                 mqtt_local.publish(b"delta-t",str(d5))
                 mqtt_local.publish(b"distance",str(d6))
                 mqtt_local.publish(b"temperature",str(d7))
-                mqtt_local.publish(b"freq",str(int(machine.freq()/1000000)))
+                mqtt_local.publish(b"freq",str(int(freq()/1000000)))
                 print(d5)
             except:
                 print("local publish failed")
