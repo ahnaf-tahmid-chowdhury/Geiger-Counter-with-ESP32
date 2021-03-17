@@ -35,3 +35,23 @@ class Buzzer:
     def off(self):
         self.pin_1.off()
         self.pin_2.off()
+
+class BiColorLED:
+    
+    def __init__(self,red=23,green=22,freq=10000,rduty=1023,gduty=1023):
+        self.freq=freq
+        self.rduty=rduty
+        self.gduty=gduty
+        
+        self.rpwmpin = PWM(Pin(red), freq=freq, duty=rduty)
+        self.gpwmpin = PWM(Pin(green), freq=freq, duty=gduty)
+        
+    def off(self):
+        self.rpwmpin.duty(0)
+        self.gpwmpin.duty(0)
+        
+    def color(self,r,g):
+        self.rpwmpin.duty(r)
+        self.gpwmpin.duty(g)
+
+        

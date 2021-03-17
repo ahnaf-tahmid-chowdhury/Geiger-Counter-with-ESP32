@@ -1,35 +1,39 @@
 import esp32
-import machine
+from machine import freq
 from utime import *
-from geiger import GMtube,Buzzer
+from geiger import GMtube,Buzzer,BiColorLED
 from umqtt.robust import MQTTClient
 import urequests
+from machine import PWM
 from json import loads, dumps
 from hcsr04 import HCSR04
 import uasyncio
-import Config
 import network
 import webrepl
 
+led=BiColorLED(red=22,green=23,rduty=0,gduty=1023)
 f = open('config.json', 'r')
 config = loads(f.read())
 f.close()
+
 
 def do_connect():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     print('connecting to network...')
-    
+    led.color(r=700,g=1023)
     wlan.connect(config['essid'], config['password'])
-    sleep(4)
+    sleep(5) # wait 5 sec to connect
     if not wlan.isconnected():
         wlan.active(False)
         ap = network.WLAN(network.AP_IF)
         ap.active(True)
-        ap.config(essid = "SmartGeiger",password = "SmartGeiger") # set the ESSID of the access point with password
+        ap.config(essid = config["clientID"],password = config["clientID"]) # set the ESSID of the access point with password
         while not ap.active():
             webrepl.start()
-
+            led.color(r=100,g=700)
+            pass
+    led.color(r=0,g=1023)
 
 mqtt_local = MQTTClient(config["clientID"], config["local_server"], port=1883)
 mqtt_cloud = MQTTClient(config["clientID"], config["ubidots"],port= 1883, user = config["ubidots_key"], password = "None")
@@ -41,15 +45,15 @@ try:
     print("mqtt local success")
 except:
     print("mqtt local faild")
-
+    led.color(r=1023,g=0)
 try:
     mqtt_cloud.connect()
     print("mqtt cloud success")
 except:
     print("mqtt cloud faild")
+    led.color(r=1023,g=100)
 
-
-g=GMtube(12,10000,675,15)
+g=GMtube(12,100000,675,15)
 usonic=HCSR04(trigger_pin=19,echo_pin=18)
 
 last_tick = ticks_ms()
@@ -58,33 +62,46 @@ CPM = []
 event = 0
 delta_t= 0
 d1= 0
-'''
-d2=0
-d3=0
-d4=0
-d5=0
-d6=0
-'''
-timer = ticks_ms()
+d2= 0
+auto = 160000000
 
 
 def onMessage_cloud(topic, msg):
     m=loads(msg)
     print(m["value"])
     if m["value"] == 1.0:
-        usonic=HCSR04(trigger_pin=19,echo_pin=18)
-        print("works")
+        config["buzzer"] = "true"
     elif m["value"] == 0.0:
-        trigger = Pin(19,Pin.OUT).off()
-        echo = Pin(18,Pin.IN).off()
+        config["buzzer"] = "false"
+
 
 def onMessage_local(topic, msg):
-    config[topic.decode()] = msg.decode()
+    m=loads(msg)
+    print(m)
+    config["config_sync"] = m["config_sync"]
+    config["time_interval"] = m["time_interval"]*60
+    config["local"] = m["local"]
+    config["cloud"] = m["cloud"]
+    config["buzzer"] = m["buzzer"]
+    config["msg_alert"] = m["msg_alert"]
+    config["powersave"] = m["powersave"]
+    config["auto_freq"] = m["auto_freq"]
+    config["max_freq"] = m["max_freq"]
     
 
 mqtt_local.set_callback(onMessage_local)
 mqtt_cloud.set_callback(onMessage_cloud)
-#mqtt_local.subscribe("buzzer",qos=0)
+mqtt_local.subscribe("smartgiger",qos=0)
+
+try:
+    print("waiting for msg...")
+    led.color(500, 700)
+    mqtt_local.wait_msg()
+    
+except:
+    print("local subscribe faild")
+    led.color(r=1023,g=0)
+timer = ticks_ms()
 
 
 async def geiger_count():
@@ -92,40 +109,43 @@ async def geiger_count():
     while True:
         # check if a new event happened
         if g.count > event:
+
+            led.color(1023, 0) if d2>200 else led.color(1023, 200) if d2>100 else led.color(1023,1023) if d2>70 else led.color(500, 950) if d2>40 else led.color(200, 1023) if d2>25 else led.color(0, 1023)
+            
             event = g.count
             current_tick = ticks_ms()
             delta_t = ticks_diff(current_tick, last_tick)
             last_tick = current_tick
-            
+            d1=d1+1
+
             if delta_t < 120000:
                 CPM.append(delta_t)
                 while sum(CPM) > 60000:
                     CPM.pop(0)
-            d1=d1+1
-            if config["buzzer"] == "true":
-                
-                Buzzer().buzzer()
-            else:
-                Buzzer().off()
+            
+            Buzzer().buzzer() if config["buzzer"] == "true" else Buzzer().off()
+            led.off()
+
             await uasyncio.sleep(0.00019) #dead time of GM tube
-'''
+
+
 async def machine_freq():
     global freq
     while True:
-        if config["powersaver"] == "true":
-            machine.freq(80000000)
+        if config["powersave"] == "true":
+            freq(80000000)
         if config["auto_freq"] == "true":
-            machine.freq(auto)
-        if config["powersaver"] == "true":
-            machine.freq(80000000)
-        await uasyncio.sleep(1)
-        '''
+            freq(auto)
+        if config["max_freq"] == "true":
+            freq(240000000)
+
+        await uasyncio.sleep_ms(500)
+
+
 async def data_pass():
     global d2, d3, d4, d5, d6, auto
     while True:
-        d2=(len(CPM))
-        if d2 < 200:
-            d2=int(d2/2)
+        d2= int(len(CPM)/2)
         d3 = d2*0.0057
         time = ticks_diff(ticks_ms(),timer)/1000
         avg = d1/time
@@ -146,6 +166,8 @@ async def data_pass():
                 mqtt_local.publish(b"delta-t",str(d5))
                 mqtt_local.publish(b"distance",str(d6))
                 mqtt_local.publish(b"temperature",str(d7))
+                mqtt_local.publish(b"freq",str(int(machine.freq()/1000000)))
+                print(d5)
             except:
                 print("local publish failed")
   
@@ -172,37 +194,39 @@ async def cloud_publish():
                 mqtt_cloud.publish("/v1.6/devices/smartgeiger/cpm", dumps(d2), qos=0,retain=False)
                 #added usv as a mathematical formula at ubidots
                 #mqtt_cloud.publish("/v1.6/devices/smartgeiger/usv", dumps(d3), qos=0,retain=False) 
-                mqtt_cloud.publish("/v1.6/devices/smartgeiger/delta-t",dumps(d4), qos=0,retain=False)
-                mqtt_cloud.publish("/v1.6/devices/smartgeiger/temperature",dumps(d6), qos=0,retain=False)
+                mqtt_cloud.publish("/v1.6/devices/smartgeiger/delta-t",dumps(d5), qos=0,retain=False)
+                mqtt_cloud.publish("/v1.6/devices/smartgeiger/temperature",dumps(d7), qos=0,retain=False)
             except:
                 print("cloud publish faild")        
-        await uasyncio.sleep(10)
+        await uasyncio.sleep(config["time_interval"])
         
+
 async def local_subscribe():
     global config
     while True:
-        if config["config_sync"] == "true":            
+        if config["config_sync"] == "true" and config["local"] == "true":            
             try:
+                led.color(700, 700)
                 mqtt_local.check_msg()
             except:
                 print("local subscribe faild")             
-        f = open('config.json', 'w')
-        f.write(dumps(config))
-        f.close()
-        await uasyncio.sleep(10)
+            f = open('config.json', 'w')
+            f.write(dumps(config))
+            f.close()
+        await uasyncio.sleep(config["time_interval"])
         
 
-
 async def cloud_subscribe():
-    
+    global config
     while True:
-        if config["cloud"] == "true" and d2 < 500:
+        if config["cloud"] == "true":
             try:
-                mqtt_cloud.subscribe("/v1.6/devices/smartgeiger/hc-sr04")
+                led.color(700, 700)
+                mqtt_cloud.subscribe("/v1.6/devices/smartgeiger/buzzer")
                 mqtt_cloud.check_msg()
             except:
                 print("cloud subscribe faild")
-        await uasyncio.sleep(60)
+        await uasyncio.sleep(config["time_interval"])
 
 
 async def ifttt():
@@ -210,6 +234,7 @@ async def ifttt():
     while True:
         if d2 > 100 and config["msg_alert"] == "true":
             try:
+                led.color(700, 700)
                 readings = {'value1':d1, 'value2':d2, 'value3':d3}
                 print(readings)
             
@@ -228,14 +253,13 @@ async def ifttt():
             await uasyncio.sleep(120)
         else:
             await uasyncio.sleep(10)
-            
+
 event_loop = uasyncio.get_event_loop()
 event_loop.create_task(geiger_count())
 event_loop.create_task(data_pass())
 event_loop.create_task(cloud_publish())
 event_loop.create_task(local_subscribe())
 event_loop.create_task(cloud_subscribe())
+event_loop.create_task(machine_freq())
 event_loop.create_task(ifttt())
-
 event_loop.run_forever()
-
