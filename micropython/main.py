@@ -23,7 +23,7 @@ def do_connect():
     wlan.active(True)
     print('connecting to network...')
     wlan.connect(config['essid'], config['password'])
-    sleep(5) # wait 5 sec to connect
+    sleep(4) # wait 5 sec to connect
     if not wlan.isconnected():
         wlan.active(False)
         ap = network.WLAN(network.AP_IF)
@@ -31,10 +31,10 @@ def do_connect():
         ap.config(essid = config["clientID"],password = config["clientID"]) # set the ESSID of the access point with password
         while not ap.active():
             webrepl.start()
-            led.color(r=100,g=700)
+            led.color(r=400,g=700)
             pass
     led.color(r=0,g=1023)
-
+    print('network config:', wlan.ifconfig())
 mqtt_local = MQTTClient(config["clientID"], config["local_server"], port=1883)
 mqtt_cloud = MQTTClient(config["clientID"], config["ubidots"],port= 1883, user = config["ubidots_key"], password = "None")
 
@@ -91,9 +91,9 @@ def onMessage_local(topic, msg):
 
 mqtt_local.set_callback(onMessage_local)
 mqtt_cloud.set_callback(onMessage_cloud)
-mqtt_local.subscribe("smartgiger",qos=0)
 
 try:
+    mqtt_local.subscribe("smartgiger",qos=0)
     print("waiting for msg...")
     led.color(500, 700)
     mqtt_local.wait_msg()
