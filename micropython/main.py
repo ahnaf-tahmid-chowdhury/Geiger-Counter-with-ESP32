@@ -4,7 +4,6 @@ from utime import *
 from geiger import GMtube,Buzzer,BiColorLED
 from umqtt.robust import MQTTClient
 import urequests
-from machine import PWM
 from json import loads, dumps
 from hcsr04 import HCSR04
 import uasyncio
